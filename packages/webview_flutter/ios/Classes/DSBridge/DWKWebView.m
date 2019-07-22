@@ -251,20 +251,35 @@ initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completi
     });
 }
 
+- (void)callFlutter:(NSString *)method argStr:(NSString *)argStr
+{
+    NSArray *nameStr=[JSBUtil parseNamespace:[method stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+    
+    NSDictionary * args=[JSBUtil jsonStringToObject:argStr];
+    
+    NSString *namespace = nameStr[0];
+    NSString *methodName = nameStr[1];
+//    NSString *message = args[@"data"];
+//    NSString * callback = args[@"_dscbstub"];
+    
+    NSDictionary* arguments = @{
+                                @"namespace" : namespace,
+                                @"method" : methodName,
+                                @"message" : argStr,
+                                };
+    [_FTChannel invokeMethod:@"dsBridgeMessage" arguments:arguments];
+}
+
 -(NSString *)call:(NSString*) method :(NSString*) argStr
 {
     
     //test start
     
-    NSDictionary* arguments = @{
-                                @"namespace" : @"User",
-                                @"method" : @"getUid",
-                                @"message" : [NSString stringWithFormat:@"my uid: %@", @"body"]
-                                };
-    [_FTChannel invokeMethod:@"dsBridgeMessage" arguments:arguments];
-    
+    [self callFlutter:method argStr:argStr];
     
     //test end
+    
+    
     NSArray *nameStr=[JSBUtil parseNamespace:[method stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
 
     id JavascriptInterfaceObject=javaScriptNamespaceInterfaces[nameStr[0]];

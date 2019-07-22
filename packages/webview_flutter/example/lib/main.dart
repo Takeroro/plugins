@@ -94,7 +94,13 @@ class _WebViewExampleState extends State<WebViewExample> {
       Scaffold.of(context).showSnackBar(
         SnackBar(content: Text(message.message)),
       );
+      _controller.future.then((WebViewController controller) {
+        String test =
+            'try {dscb0(JSON.parse(decodeURIComponent("%7B%22data%22:%223800232223%22,%22code%22:0%7D")).data);delete window.dscb0; } catch(e){};';
+        controller.evaluateJavascript(test);
+      });
     };
+
     return DSBridgeChannel(nameSpace: 'User', methodCallbackMapping: testMap);
   }
 
