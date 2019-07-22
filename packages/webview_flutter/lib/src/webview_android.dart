@@ -23,6 +23,7 @@ class AndroidWebView implements WebViewPlatform {
     BuildContext context,
     CreationParams creationParams,
     @required WebViewPlatformCallbacksHandler webViewPlatformCallbacksHandler,
+    @required WebViewDSBridgeCallbacksHandler dsBridgeCallbacksHandler,
     WebViewPlatformCreatedCallback onWebViewPlatformCreated,
     Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers,
   }) {

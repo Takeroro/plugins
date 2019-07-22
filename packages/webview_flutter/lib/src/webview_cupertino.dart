@@ -23,6 +23,7 @@ class CupertinoWebView implements WebViewPlatform {
     BuildContext context,
     CreationParams creationParams,
     @required WebViewPlatformCallbacksHandler webViewPlatformCallbacksHandler,
+    @required WebViewDSBridgeCallbacksHandler dsBridgeCallbacksHandler,
     WebViewPlatformCreatedCallback onWebViewPlatformCreated,
     Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers,
   }) {
@@ -32,8 +33,8 @@ class CupertinoWebView implements WebViewPlatform {
         if (onWebViewPlatformCreated == null) {
           return;
         }
-        onWebViewPlatformCreated(
-            MethodChannelWebViewPlatform(id, webViewPlatformCallbacksHandler));
+        onWebViewPlatformCreated(MethodChannelWebViewPlatform(
+            id, webViewPlatformCallbacksHandler, dsBridgeCallbacksHandler));
       },
       gestureRecognizers: gestureRecognizers,
       creationParams:

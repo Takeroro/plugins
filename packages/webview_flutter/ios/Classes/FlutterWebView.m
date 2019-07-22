@@ -5,6 +5,7 @@
 #import "FlutterWebView.h"
 #import "FLTWKNavigationDelegate.h"
 #import "JavaScriptChannelHandler.h"
+#import "DWKWebView.h"
 
 @implementation FLTWebViewFactory {
   NSObject<FlutterBinaryMessenger>* _messenger;
@@ -35,7 +36,7 @@
 @end
 
 @implementation FLTWebViewController {
-  WKWebView* _webView;
+  DWKWebView* _webView;
   int64_t _viewId;
   FlutterMethodChannel* _channel;
   NSString* _currentUrl;
@@ -65,7 +66,7 @@
     WKWebViewConfiguration* configuration = [[WKWebViewConfiguration alloc] init];
     configuration.userContentController = userContentController;
 
-    _webView = [[WKWebView alloc] initWithFrame:frame configuration:configuration];
+    _webView = [[DWKWebView alloc] initWithFrame:frame configuration:configuration methodChannel:_channel];
     _navigationDelegate = [[FLTWKNavigationDelegate alloc] initWithChannel:_channel];
     _webView.navigationDelegate = _navigationDelegate;
     __weak __typeof__(self) weakSelf = self;
@@ -290,6 +291,7 @@
 }
 
 - (bool)loadUrl:(NSString*)url {
+    url = @"https://webtest.nickbussok.com/vip_xs201904/vip.html";
   return [self loadUrl:url withHeaders:[NSMutableDictionary dictionary]];
 }
 

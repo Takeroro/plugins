@@ -9,9 +9,19 @@
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [self initUserAgent];
   [GeneratedPluginRegistrant registerWithRegistry:self];
   // Override point for customization after application launch.
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
+
+- (void)initUserAgent {
+    UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
+    NSString *userAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
+    NSString *newUserAgent = [userAgent stringByAppendingString:@"; iOS wairead "];
+    NSDictionary *dictionary = [NSDictionary dictionaryWithObjectsAndKeys:newUserAgent, @"UserAgent", nil];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:dictionary];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 @end

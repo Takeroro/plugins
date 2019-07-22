@@ -27,6 +27,11 @@ abstract class WebViewPlatformCallbacksHandler {
   void onPageFinished(String url);
 }
 
+abstract class WebViewDSBridgeCallbacksHandler {
+  /// Invoked by [WebViewPlatformController] when a DSBridge message is received.
+  void onDSBridgeMessage(String namespace, String method, String message);
+}
+
 /// Interface for talking to the webview's platform implementation.
 ///
 /// An instance implementing this interface is passed to the `onWebViewPlatformCreated` callback that is
@@ -253,6 +258,7 @@ abstract class WebViewPlatform {
     // I'll followup with the conversion PR.
     CreationParams creationParams,
     @required WebViewPlatformCallbacksHandler webViewPlatformCallbacksHandler,
+    @required WebViewDSBridgeCallbacksHandler dsBridgeCallbacksHandler,
     WebViewPlatformCreatedCallback onWebViewPlatformCreated,
     Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers,
   });

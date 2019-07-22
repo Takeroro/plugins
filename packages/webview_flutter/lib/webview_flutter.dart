@@ -103,6 +103,14 @@ class JavascriptChannel {
   final JavascriptMessageHandler onMessageReceived;
 }
 
+class DSBridgeChannel {
+  DSBridgeChannel({this.nameSpace, this.methodCallbackMapping});
+
+  final String nameSpace;
+
+  final Map<String, JavascriptMessageHandler> methodCallbackMapping;
+}
+
 /// A web view widget for showing html content.
 class WebView extends StatefulWidget {
   /// Creates a new web view.
@@ -121,6 +129,7 @@ class WebView extends StatefulWidget {
     this.gestureRecognizers,
     this.onPageFinished,
     this.debuggingEnabled = false,
+    this.dsBridgeChannels,
   })  : assert(javascriptMode != null),
         super(key: key);
 
@@ -206,6 +215,9 @@ class WebView extends StatefulWidget {
   /// A null value is equivalent to an empty set.
   final Set<JavascriptChannel> javascriptChannels;
 
+//DSBridgeHolder
+  final Set<DSBridgeChannel> dsBridgeChannels;
+
   /// A delegate function that decides how to handle navigation actions.
   ///
   /// When a navigation is initiated by the WebView (e.g when a user clicks a link)
@@ -265,12 +277,15 @@ class _WebViewState extends State<WebView> {
 
   _PlatformCallbacksHandler _platformCallbacksHandler;
 
+  _DSbridgeCallbacksHandler _dSbridgeCallbacksHandler;
+
   @override
   Widget build(BuildContext context) {
     return WebView.platform.build(
       context: context,
       onWebViewPlatformCreated: _onWebViewPlatformCreated,
       webViewPlatformCallbacksHandler: _platformCallbacksHandler,
+      dsBridgeCallbacksHandler: _dSbridgeCallbacksHandler,
       gestureRecognizers: widget.gestureRecognizers,
       creationParams: _creationParamsfromWidget(widget),
     );
@@ -281,6 +296,7 @@ class _WebViewState extends State<WebView> {
     super.initState();
     _assertJavascriptChannelNamesAreUnique();
     _platformCallbacksHandler = _PlatformCallbacksHandler(widget);
+    _dSbridgeCallbacksHandler = _DSbridgeCallbacksHandler(widget);
   }
 
   @override
@@ -363,6 +379,33 @@ Set<String> _extractChannelNames(Set<JavascriptChannel> channels) {
       ? Set<String>()
       : channels.map((JavascriptChannel channel) => channel.name).toSet();
   return channelNames;
+}
+
+class _DSbridgeCallbacksHandler implements WebViewDSBridgeCallbacksHandler {
+  _DSbridgeCallbacksHandler(this._widget) {
+    _updateDSChannelsFromSet(_widget.dsBridgeChannels);
+  }
+
+  WebView _widget;
+
+  // Maps a channel name to a channel.
+  final Map<String, DSBridgeChannel> _dsChannels = <String, DSBridgeChannel>{};
+
+  @override
+  void onDSBridgeMessage(String namespace, String method, String message) {
+    DSBridgeChannel dschannel = _dsChannels[namespace];
+    dschannel.methodCallbackMapping[method](JavascriptMessage(message));
+  }
+
+  void _updateDSChannelsFromSet(Set<DSBridgeChannel> channels) {
+    _dsChannels.clear();
+    if (channels == null) {
+      return;
+    }
+    for (DSBridgeChannel channel in channels) {
+      _dsChannels[channel.nameSpace] = channel;
+    }
+  }
 }
 
 class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {

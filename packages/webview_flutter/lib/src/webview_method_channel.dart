@@ -10,7 +10,8 @@ import '../platform_interface.dart';
 
 /// A [WebViewPlatformController] that uses a method channel to control the webview.
 class MethodChannelWebViewPlatform implements WebViewPlatformController {
-  MethodChannelWebViewPlatform(int id, this._platformCallbacksHandler)
+  MethodChannelWebViewPlatform(
+      int id, this._platformCallbacksHandler,[this._dsBrigeCallbacksHandler])
       : assert(_platformCallbacksHandler != null),
         _channel = MethodChannel('plugins.flutter.io/webview_$id') {
     _channel.setMethodCallHandler(_onMethodCall);
@@ -18,18 +19,29 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
 
   final WebViewPlatformCallbacksHandler _platformCallbacksHandler;
 
+  final WebViewDSBridgeCallbacksHandler _dsBrigeCallbacksHandler;
+
   final MethodChannel _channel;
 
   static const MethodChannel _cookieManagerChannel =
       MethodChannel('plugins.flutter.io/cookie_manager');
 
   Future<bool> _onMethodCall(MethodCall call) async {
+    print('_onMethodCall'+call.method);
     switch (call.method) {
       case 'javascriptChannelMessage':
         final String channel = call.arguments['channel'];
         final String message = call.arguments['message'];
         _platformCallbacksHandler.onJavaScriptChannelMessage(channel, message);
         return true;
+
+      case 'dsBridgeMessage':
+        final String namespace = call.arguments['namespace'];
+        final String method = call.arguments['method'];
+        final String message = call.arguments['message'];
+        _dsBrigeCallbacksHandler.onDSBridgeMessage(namespace, method, message);
+        return true;
+
       case 'navigationRequest':
         return _platformCallbacksHandler.onNavigationRequest(
           url: call.arguments['url'],
