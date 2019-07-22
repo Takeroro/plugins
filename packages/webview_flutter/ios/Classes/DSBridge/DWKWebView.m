@@ -273,88 +273,85 @@ initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completi
 -(NSString *)call:(NSString*) method :(NSString*) argStr
 {
     
-    //test start
-    
     [self callFlutter:method argStr:argStr];
     
-    //test end
     
     
-    NSArray *nameStr=[JSBUtil parseNamespace:[method stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
-
-    id JavascriptInterfaceObject=javaScriptNamespaceInterfaces[nameStr[0]];
-    NSString *error=[NSString stringWithFormat:@"Error! \n Method %@ is not invoked, since there is not a implementation for it",method];
-    NSMutableDictionary*result =[NSMutableDictionary dictionaryWithDictionary:@{@"code":@-1,@"data":@""}];
-    if(!JavascriptInterfaceObject){
-        NSLog(@"Js bridge  called, but can't find a corresponded JavascriptObject , please check your code!");
-    }else{
-        method=nameStr[1];
-        NSString *methodOne = [JSBUtil methodByNameArg:1 selName:method class:[JavascriptInterfaceObject class]];
-        NSString *methodTwo = [JSBUtil methodByNameArg:2 selName:method class:[JavascriptInterfaceObject class]];
-        SEL sel=NSSelectorFromString(methodOne);
-        SEL selasyn=NSSelectorFromString(methodTwo);
-        NSDictionary * args=[JSBUtil jsonStringToObject:argStr];
-        id arg=args[@"data"];
-        if(arg==[NSNull null]){
-            arg=nil;
-        }
-        NSString * cb;
-        do{
-            if(args && (cb= args[@"_dscbstub"])){
-                if([JavascriptInterfaceObject respondsToSelector:selasyn]){
-                    __weak typeof(self) weakSelf = self;
-                    void (^completionHandler)(id,BOOL) = ^(id value,BOOL complete){
-                        NSString *del=@"";
-                        result[@"code"]=@0;
-                        if(value!=nil){
-                            result[@"data"]=value;
-                        }
-                        value=[JSBUtil objToJsonString:result];
-                        value=[value stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
-                        
-                        if(complete){
-                            del=[@"delete window." stringByAppendingString:cb];
-                        }
-                        NSString*js=[NSString stringWithFormat:@"try {%@(JSON.parse(decodeURIComponent(\"%@\")).data);%@; } catch(e){};",cb,(value == nil) ? @"" : value,del];
-                        __strong typeof(self) strongSelf = weakSelf;
-                        @synchronized(self)
-                        {
-                            UInt64  t=[[NSDate date] timeIntervalSince1970]*1000;
-                            jsCache=[jsCache stringByAppendingString:js];
-                            if(t-lastCallTime<50){
-                                if(!isPending){
-                                    [strongSelf evalJavascript:50];
-                                    isPending=true;
-                                }
-                            }else{
-                                [strongSelf evalJavascript:0];
-                            }
-                        }
-                        
-                    };
-                    
-                    void(*action)(id,SEL,id,id) = (void(*)(id,SEL,id,id))objc_msgSend;
-                    action(JavascriptInterfaceObject,selasyn,arg,completionHandler);
-                    break;
-                }
-            }else if([JavascriptInterfaceObject respondsToSelector:sel]){
-                id ret;
-                id(*action)(id,SEL,id) = (id(*)(id,SEL,id))objc_msgSend;
-                ret=action(JavascriptInterfaceObject,sel,arg);
-                [result setValue:@0 forKey:@"code"];
-                if(ret!=nil){
-                    [result setValue:ret forKey:@"data"];
-                }
-                break;
-            }
-            NSString*js=[error stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
-            if(isDebug){
-                js=[NSString stringWithFormat:@"window.alert(decodeURIComponent(\"%@\"));",js];
-                [self evaluateJavaScript :js completionHandler:nil];
-            }
-            NSLog(@"%@",error);
-        }while (0);
-    }
+//    NSArray *nameStr=[JSBUtil parseNamespace:[method stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+//
+//    id JavascriptInterfaceObject=javaScriptNamespaceInterfaces[nameStr[0]];
+//    NSString *error=[NSString stringWithFormat:@"Error! \n Method %@ is not invoked, since there is not a implementation for it",method];
+//    NSMutableDictionary*result =[NSMutableDictionary dictionaryWithDictionary:@{@"code":@-1,@"data":@""}];
+//    if(!JavascriptInterfaceObject){
+//        NSLog(@"Js bridge  called, but can't find a corresponded JavascriptObject , please check your code!");
+//    }else{
+//        method=nameStr[1];
+//        NSString *methodOne = [JSBUtil methodByNameArg:1 selName:method class:[JavascriptInterfaceObject class]];
+//        NSString *methodTwo = [JSBUtil methodByNameArg:2 selName:method class:[JavascriptInterfaceObject class]];
+//        SEL sel=NSSelectorFromString(methodOne);
+//        SEL selasyn=NSSelectorFromString(methodTwo);
+//        NSDictionary * args=[JSBUtil jsonStringToObject:argStr];
+//        id arg=args[@"data"];
+//        if(arg==[NSNull null]){
+//            arg=nil;
+//        }
+//        NSString * cb;
+//        do{
+//            if(args && (cb= args[@"_dscbstub"])){
+//                if([JavascriptInterfaceObject respondsToSelector:selasyn]){
+//                    __weak typeof(self) weakSelf = self;
+//                    void (^completionHandler)(id,BOOL) = ^(id value,BOOL complete){
+//                        NSString *del=@"";
+//                        result[@"code"]=@0;
+//                        if(value!=nil){
+//                            result[@"data"]=value;
+//                        }
+//                        value=[JSBUtil objToJsonString:result];
+//                        value=[value stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+//
+//                        if(complete){
+//                            del=[@"delete window." stringByAppendingString:cb];
+//                        }
+//                        NSString*js=[NSString stringWithFormat:@"try {%@(JSON.parse(decodeURIComponent(\"%@\")).data);%@; } catch(e){};",cb,(value == nil) ? @"" : value,del];
+//                        __strong typeof(self) strongSelf = weakSelf;
+//                        @synchronized(self)
+//                        {
+//                            UInt64  t=[[NSDate date] timeIntervalSince1970]*1000;
+//                            jsCache=[jsCache stringByAppendingString:js];
+//                            if(t-lastCallTime<50){
+//                                if(!isPending){
+//                                    [strongSelf evalJavascript:50];
+//                                    isPending=true;
+//                                }
+//                            }else{
+//                                [strongSelf evalJavascript:0];
+//                            }
+//                        }
+//
+//                    };
+//
+//                    void(*action)(id,SEL,id,id) = (void(*)(id,SEL,id,id))objc_msgSend;
+//                    action(JavascriptInterfaceObject,selasyn,arg,completionHandler);
+//                    break;
+//                }
+//            }else if([JavascriptInterfaceObject respondsToSelector:sel]){
+//                id ret;
+//                id(*action)(id,SEL,id) = (id(*)(id,SEL,id))objc_msgSend;
+//                ret=action(JavascriptInterfaceObject,sel,arg);
+//                [result setValue:@0 forKey:@"code"];
+//                if(ret!=nil){
+//                    [result setValue:ret forKey:@"data"];
+//                }
+//                break;
+//            }
+//            NSString*js=[error stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+//            if(isDebug){
+//                js=[NSString stringWithFormat:@"window.alert(decodeURIComponent(\"%@\"));",js];
+//                [self evaluateJavaScript :js completionHandler:nil];
+//            }
+//            NSLog(@"%@",error);
+//        }while (0);
+//    }
     return [JSBUtil objToJsonString:result];
 }
 

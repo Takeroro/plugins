@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter/DSBridgeUtil.dart';
 
 void main() => runApp(MaterialApp(home: WebViewExample()));
 
@@ -87,17 +88,16 @@ class _WebViewExampleState extends State<WebViewExample> {
   }
 
   DSBridgeChannel _testDSBridge(BuildContext context) {
-    Map<String, JavascriptMessageHandler> testMap =
-        <String, JavascriptMessageHandler>{};
+    Map<String, DSBridgeMessageHandler> testMap =
+        <String, DSBridgeMessageHandler>{};
 
-    testMap['getUid'] = (JavascriptMessage message) {
-      Scaffold.of(context).showSnackBar(
-        SnackBar(content: Text(message.message)),
-      );
+    testMap['getUid'] = (JavascriptMessage message, String callback) {
+      // Scaffold.of(context).showSnackBar(
+      //   SnackBar(content: Text(message.message)),
+      // );
+
       _controller.future.then((WebViewController controller) {
-        String test =
-            'try {dscb0(JSON.parse(decodeURIComponent("%7B%22data%22:%223800232223%22,%22code%22:0%7D")).data);delete window.dscb0; } catch(e){};';
-        controller.evaluateJavascript(test);
+        DSBridgeUtil.dsCallbackString(webController: controller,completed: true, callback: callback, data:111000 );
       });
     };
 

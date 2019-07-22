@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -35,6 +36,8 @@ class JavascriptMessage {
 
 /// Callback type for handling messages sent from Javascript running in a web view.
 typedef void JavascriptMessageHandler(JavascriptMessage message);
+
+typedef void DSBridgeMessageHandler(JavascriptMessage message,String callback);
 
 /// Information about a navigation action that is about to be executed.
 class NavigationRequest {
@@ -108,7 +111,7 @@ class DSBridgeChannel {
 
   final String nameSpace;
 
-  final Map<String, JavascriptMessageHandler> methodCallbackMapping;
+  final Map<String, DSBridgeMessageHandler> methodCallbackMapping;
 }
 
 /// A web view widget for showing html content.
@@ -394,7 +397,10 @@ class _DSbridgeCallbacksHandler implements WebViewDSBridgeCallbacksHandler {
   @override
   void onDSBridgeMessage(String namespace, String method, String message) {
     DSBridgeChannel dschannel = _dsChannels[namespace];
-    dschannel.methodCallbackMapping[method](JavascriptMessage(message));
+    Map map = json.decode(message);
+    final String callback = map['_dscbstub'];
+    final String messageData = map['data'];
+    dschannel.methodCallbackMapping[method](JavascriptMessage(messageData),callback);
   }
 
   void _updateDSChannelsFromSet(Set<DSBridgeChannel> channels) {

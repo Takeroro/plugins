@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
@@ -10,8 +11,8 @@ import '../platform_interface.dart';
 
 /// A [WebViewPlatformController] that uses a method channel to control the webview.
 class MethodChannelWebViewPlatform implements WebViewPlatformController {
-  MethodChannelWebViewPlatform(
-      int id, this._platformCallbacksHandler,[this._dsBrigeCallbacksHandler])
+  MethodChannelWebViewPlatform(int id, this._platformCallbacksHandler,
+      [this._dsBrigeCallbacksHandler])
       : assert(_platformCallbacksHandler != null),
         _channel = MethodChannel('plugins.flutter.io/webview_$id') {
     _channel.setMethodCallHandler(_onMethodCall);
@@ -27,7 +28,7 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
       MethodChannel('plugins.flutter.io/cookie_manager');
 
   Future<bool> _onMethodCall(MethodCall call) async {
-    print('_onMethodCall'+call.method);
+    print('_onMethodCall' + call.method);
     switch (call.method) {
       case 'javascriptChannelMessage':
         final String channel = call.arguments['channel'];
